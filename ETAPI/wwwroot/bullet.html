@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title></title>
+    <style lang="css">
+        .form-group {
+            position: relative;
+            padding-top: 1.5rem;
+        }
+
+        label {
+            position: absolute;
+            top: 0;
+            font-size: var(--font-size-small);
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.2s ease-out;
+        }
+
+        input:placeholder-shown + label {
+            opacity: 0;
+            transform: translateY(1rem);
+        }
+
+        .container {
+            height: 50vh;
+            border: 1px solid green;
+            width: 100%;
+        }
+        .message{
+            height:2vh;
+        }
+
+        .bullet {
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div class="message">
+        <p id="msg" class="msg"></p>
+    </div>
+    <div class="container"></div>
+    <div>
+        <div class="form-group">
+            <input type="text" id="dynamic-label-input" placeholder="Enter some text">
+            <label for="dynamic-label-input">Enter some text</label>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    function show(msg) {
+        $('#msg').text(msg);
+    }
+    let msgList = ["adsfasdf", "dasdeawer", "cccccccccccc"];
+    let sl;
+    function move(ele,speed) {
+        var lp = ele.css('left');
+        lp = lp.replace('px', '');
+        lp = lp - speed;
+        if (lp < -500) {
+            ele.remove();
+        }
+        ele.css('left', lp + 'px');
+    }
+    $(document).ready(() => {
+        //addMsg('testsets');
+
+        //setInterval(() => { /*console.log('---') */}, 500);
+    })
+    addMsg = (text) => {
+        let p = $('<p class="bullet"></p>');
+        p.text(text);
+        let top = Math.random() * 1000;
+        let speed = Math.random() * 10;
+        p.css('top', top+'px');
+        p.css('left', window.innerWidth + 'px');
+        $('.container').append(p);
+        setInterval(() => { move(p,speed); }, 100);
+        //console.log(p);
+    }
+
+</script>
+
+<script language="javascript" type="text/javascript">
+    var socket;
+    var uri = "ws://" + window.location.host + "/ws";
+    var output;
+    var text = "test echo";
+
+    function write(s) {
+        //var p = document.createElement("p");
+        //p.innerHTML = s;
+        //output.appendChild(p);
+        show(s);
+    }
+
+    function doConnect() {
+        if (!socket) {
+            socket = new WebSocket(uri);
+        }
+        else if (socket.readyState != 1) {
+            console.log(socket.readyState);
+            socket = new WebSocket(uri);
+        }
+        show('connect');
+        socket.onopen = e => { write("opened " + uri); };
+        socket.onclose = e => { write("closed"); };
+        socket.onmessage = onMessageRecieve;
+        socket.onerror = function (e) { write("Error: " + e.data); };
+    }
+
+    function onMessageRecieve(e) {
+        write("message recieve: " + e.data);
+        addMsg(e.data);
+    }
+
+    function doDisconnect() {
+        socket.close();
+    }
+
+    function doSend(txt) {
+
+        var txtMsg = document.querySelector('#txtMsg');
+        txt = txtMsg.value;
+
+        write("Sending: " + txt);
+        socket.send(txt);
+    }
+
+    function onWSInit() {
+        output = document.getElementById("output");
+        doConnect();
+    }
+
+    //window.onload = onInit;
+    $(document).ready(() => {
+        onWSInit();
+        write('init');
+    })
+</script>

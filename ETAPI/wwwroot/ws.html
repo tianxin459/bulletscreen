@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title></title>
+</head>
+<body>
+    <div>BB Message</div>
+    <div id="output"></div>
+    <div class="btn-bar">
+        <button onclick="doConnect()">Connect</button>
+        <button onclick="doDisconnect()">Disconnect</button>
+    </div>
+    <div class="input">
+        <input id="txtMsg" type="text" />
+        <button onclick="doSend()">send Message</button>
+    </div>
+</body>
+</html>
+<script language="javascript" type="text/javascript">
+    var socket;
+    var uri = "ws://" + window.location.host + "/ws";
+    var output;
+    var text = "test echo";
+
+    function write(s) {
+        var p = document.createElement("p");
+        p.innerHTML = s;
+        output.appendChild(p);
+    }
+
+    function doConnect() {
+        if (!socket) {
+            socket = new WebSocket(uri);
+        }
+        else if (socket.readyState != 1) {
+            console.log(socket.readyState);
+            socket = new WebSocket(uri);
+        }
+        socket.onopen = e => { write("opened " + uri); };
+        socket.onclose = e => { write("closed"); };
+        socket.onmessage = e => { write("Received: " + e.data); };
+        socket.onerror = function (e) { write("Error: " + e.data); };
+    }
+
+    function doDisconnect() {
+        socket.close();
+    }
+
+    function doSend(txt) {
+
+        var txtMsg = document.querySelector('#txtMsg');
+        txt = txtMsg.value;
+
+        write("Sending: " + txt);
+        socket.send(txt);
+    }
+
+    function onInit() {
+        output = document.getElementById("output");
+        doConnect();
+    }
+
+    //window.onload = onInit;
+    $(document).ready(() => {
+        onInit();
+    })
+</script>
